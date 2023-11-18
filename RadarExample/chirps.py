@@ -5,7 +5,7 @@
 """
 #%% Libs and functions
 from IPython import get_ipython
-get_ipython().run_line_magic('reset', '-sf')
+#get_ipython().run_line_magic('reset', '-sf')
 
 import numpy as np
 import matplotlib.pyplot as plt

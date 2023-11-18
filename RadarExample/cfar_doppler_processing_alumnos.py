@@ -62,7 +62,7 @@ rank_max = 30e3 # Maximum Range [m] (podría ser el Ru)
 rank_res = ts*c/2 # Range Step [m]
 tmax = 2*rank_max/c # Maximum Simulation Time
 
-radar_signal = pd.read_csv('signal.csv',index_col=None)
+radar_signal = pd.read_csv('signal_3.csv',index_col=None)
 radar_signal = np.array(radar_signal['real']+1j*radar_signal['imag'])
 radar_signal = radar_signal.reshape(Np,-1)
 
@@ -116,3 +116,43 @@ ax.set_xlabel('Range [km]')
 ax.grid(True)
 
 
+#%% Plot Signals Convolución de Matched Filter con txsignal
+compressed_signal = []
+for t in range(len(radar_signal)):
+    compressed_signal_i = fastconv(radar_signal[t], matched_filter)
+    # Recortar la señal convolucionada
+    start_idx = int(len(matched_filter)/2)
+    end_idx = start_idx + len(radar_signal[t])
+    compressed_signal_i = compressed_signal_i[start_idx:end_idx]
+    compressed_signal.append(compressed_signal_i)
+
+compressed_signal = np.stack(compressed_signal, axis=0)
+fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
+fig.suptitle('Convoluted Signal')
+
+# Graficar la parte real
+ax = axes[0]
+ax.plot(ranks / 1e3, compressed_signal[0].real, label='Real Part')
+ax.set_ylabel('Amplitude')
+ax.grid(True)
+ax.legend()
+
+# Graficar la parte imaginaria
+ax = axes[1]
+ax.plot(ranks / 1e3, compressed_signal[0].imag, label='Imaginary Part')
+ax.set_ylabel('Amplitude')
+ax.grid(True)
+ax.legend()
+
+# Graficar la magnitud
+ax = axes[2]
+ax.plot(ranks / 1e3, np.abs(compressed_signal[0]), label='Magnitude')
+ax.set_ylabel('Magnitude')
+ax.set_xlabel('Range [km]')
+ax.grid(True)
+ax.legend()
+
+plt.tight_layout()
+plt.show()
+
+#%%
