@@ -175,13 +175,15 @@ plt.show()
 # ---------------------------------------------------------------------------------
 
 # Calculo de las señales absoluta
-abs_radar_signal = np.abs(radar_signal)
-abs_compressed_signal = np.abs(compressed_signal)
+#abs_radar_signal = np.abs(radar_signal)            ## no correspondia
+#abs_compressed_signal = np.abs(compressed_signal)
+
 gain_MTIsc = 3.85 # Ganancia del filtro MTIsc
 
 # Calculo de la señal MTIsc
-MTIsc = (abs_compressed_signal[1])-(abs_compressed_signal[0])
+MTIsc = (compressed_signal[1])-(compressed_signal[0])
 MTIsc_abs = np.abs(MTIsc)
+
 # Calculo del umbral
 threshold_MTIsc = gain_MTIsc*fastconv(cfar3,MTIsc_abs)[len(cfar3)//2:len(cfar3)//2 + len(ranks)]
 
@@ -195,8 +197,8 @@ target_MTIsc = np.append(target_MTIsc,0)    # Agrego un elemento al final para a
 # Graficos de señales de radar, comprimida, MTIsc 
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
-axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
-axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
+axes[0].plot(ranks/1000,np.abs(radar_signal[0]),label='Rx t0')
+axes[0].plot(ranks/1000,np.abs(radar_signal[1]),label='Rx t1')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].grid(True) 
@@ -273,9 +275,9 @@ target_MTIdc = np.append(target_MTIdc,0)   # Agrego un cero al final para que co
 # Graficos de señales de radar, comprimida, MTIdc
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
-axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
-axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
-axes[0].plot(ranks/1000,abs_radar_signal[2],label='Rx t2')
+axes[0].plot(ranks/1000,abs(radar_signal[0]),label='Rx t0')
+axes[0].plot(ranks/1000,abs(radar_signal[1]),label='Rx t1')
+axes[0].plot(ranks/1000,abs(radar_signal[2]),label='Rx t2')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].legend()
@@ -353,8 +355,8 @@ target_position_STIsc = ranks[target_STIsc == 1]
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
 # Señal de radar en dos tiempos diferentes
-axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
-axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
+axes[0].plot(ranks/1000,abs(radar_signal[0]),label='Rx t0')
+axes[0].plot(ranks/1000,abs(radar_signal[1]),label='Rx t1')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].legend()
