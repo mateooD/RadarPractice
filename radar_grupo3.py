@@ -31,7 +31,7 @@ c = 3e8              # Velocidad de la luz en m/s
 k = 1.380649e-23     # Constante de Boltzmann
 
 fc = 1.3e9          # Frecuencia de portadora 1.3 GHz
-fs = 10e6           # Frecuencia de muestreo 10 MHz
+fs = 10e6          # Frecuencia de muestreo 10 MHz
 Np = 100            # Numero de Intervalos de muestreo
 Nint = 10           # Numero de intervalos de integración
 NPRIs = Nint*Np     # 
@@ -115,7 +115,7 @@ plt.show()
 
 
 # ---------------------------------------------------------------------------------
-# Convolución de Matched Filter con Señal de Radar. Se obtiene la señal comprimida
+# Convolución de Matched Filter con Señal de Radar. Generación del CHIRP 
 # ---------------------------------------------------------------------------------
 
 compressed_signal = []
@@ -175,15 +175,13 @@ plt.show()
 # ---------------------------------------------------------------------------------
 
 # Calculo de las señales absoluta
-#abs_radar_signal = np.abs(radar_signal)            ## no correspondia
+abs_radar_signal = np.abs(radar_signal)
 #abs_compressed_signal = np.abs(compressed_signal)
-
 gain_MTIsc = 3.85 # Ganancia del filtro MTIsc
 
 # Calculo de la señal MTIsc
 MTIsc = (compressed_signal[1])-(compressed_signal[0])
 MTIsc_abs = np.abs(MTIsc)
-
 # Calculo del umbral
 threshold_MTIsc = gain_MTIsc*fastconv(cfar3,MTIsc_abs)[len(cfar3)//2:len(cfar3)//2 + len(ranks)]
 
@@ -197,8 +195,8 @@ target_MTIsc = np.append(target_MTIsc,0)    # Agrego un elemento al final para a
 # Graficos de señales de radar, comprimida, MTIsc 
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
-axes[0].plot(ranks/1000,np.abs(radar_signal[0]),label='Rx t0')
-axes[0].plot(ranks/1000,np.abs(radar_signal[1]),label='Rx t1')
+axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
+axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].grid(True) 
@@ -262,7 +260,7 @@ plt.show()
 
 gain_MTIdc = 3.85
 # Cálculo de la señal MTI de Cancelación Doble
-MTIdc = (compressed_signal[2])-(compressed_signal[0])-2*compressed_signal[1]
+MTIdc = compressed_signal[2]-2*compressed_signal[1]+compressed_signal[0]
 MTIdc_abs = np.abs(MTIdc)
 # Calcula el umbral usando la ventana CFAR
 threshold_MTIdc = gain_MTIdc*fastconv(cfar3,MTIdc_abs)[len(cfar3)//2:len(cfar3)//2 + len(ranks)]
@@ -275,9 +273,9 @@ target_MTIdc = np.append(target_MTIdc,0)   # Agrego un cero al final para que co
 # Graficos de señales de radar, comprimida, MTIdc
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
-axes[0].plot(ranks/1000,abs(radar_signal[0]),label='Rx t0')
-axes[0].plot(ranks/1000,abs(radar_signal[1]),label='Rx t1')
-axes[0].plot(ranks/1000,abs(radar_signal[2]),label='Rx t2')
+axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
+axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
+axes[0].plot(ranks/1000,abs_radar_signal[2],label='Rx t2')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].legend()
@@ -334,10 +332,10 @@ plt.show()
 # STI SC Filter (Stationary Target Indicator de Cancelación Simple)
 # ---------------------------------------------------------------------------------
 
-gain_STIsc = 3.85       # Ganancia del filtro STIsc
+gain_STIsc = 12       # Ganancia del filtro STIsc
 
 # Calculo de la señal STIsc
-STIsc = (compressed_signal[1])+(compressed_signal[0]) 
+STIsc = compressed_signal[1]+compressed_signal[0]
 STIsc_abs = np.abs(STIsc)
 
 # Calculo del umbral
@@ -355,8 +353,8 @@ target_position_STIsc = ranks[target_STIsc == 1]
 fig, axes = plt.subplots(4,1,figsize=(6,6), sharex=True)
 
 # Señal de radar en dos tiempos diferentes
-axes[0].plot(ranks/1000,abs(radar_signal[0]),label='Rx t0')
-axes[0].plot(ranks/1000,abs(radar_signal[1]),label='Rx t1')
+axes[0].plot(ranks/1000,abs_radar_signal[0],label='Rx t0')
+axes[0].plot(ranks/1000,abs_radar_signal[1],label='Rx t1')
 axes[0].set_ylabel('Value')
 axes[0].set_xlabel('Rx Raw Signal')
 axes[0].legend()
@@ -386,7 +384,7 @@ axes[3].legend()
 #%% Slider
 axcolor = 'lightgoldenrodyellow'
 ax_gap = plt.axes([0.2, 0.01, 0.65, 0.03], facecolor=axcolor)
-slider_gain_STIsc = Slider(ax_gap, 'STI SC Gain', 1, 10, valinit=gain_MTIsc)
+slider_gain_STIsc = Slider(ax_gap, 'STI SC Gain', 1, 20, valinit=gain_MTIsc)
 
 # Función de actualización para el slider
 def update_sti_sc(val):
@@ -417,10 +415,10 @@ plt.show()
 # ---------------------------------------------------------------------------------
 
 MTIsc_complete = np.zeros_like(radar_signal)
-
-for t in range (gap, len(ranks)-gap):
+#print(MTIsc_complete.shape)
+for PTR in range (1, Np):
     # Resta de señales comprimidas consecutivas
-    MTIsc_complete[:,t] = compressed_signal[:,t] - compressed_signal[:,t-1]
+    MTIsc_complete[PTR] = compressed_signal[PTR] - compressed_signal[PTR-1]
 
 # Transpone la señal para el análisis
 MTIsc_transp = MTIsc_complete.T
@@ -428,7 +426,7 @@ MTIsc_transp = MTIsc_complete.T
 # Calcula el exponente para la transformada de Fourier
 range_sequence = np.arange(1, Np + 1) # crea un array que va desde 1 hasta Np
 outer_product = np.outer(range_sequence, range_sequence.T) # crea el producto externo entre el array y su transpuesta
-exponent = np.exp(-1j*2*np.pi*outer_product/(Np+1)) # 
+exponent = np.exp(-1j*2*np.pi*outer_product/(Np+1)) 
 
  
 product = (MTIsc_transp @ exponent).T # Multiplica la señal transpuesta por el exponente y luego transpone el resultado
@@ -450,3 +448,4 @@ ax.set_zlabel('Amplitude')
 ax.set_title('Doppler')
 plt.show()
 
+#%%
